@@ -27,13 +27,13 @@ const Ex10: React.FC = () => {
       <View style={styles.buttons}>
         <TouchableOpacity
           style={styles.button}
-          onPress={() => changeColor(color, -15)}
+          onPress={() => changeColor(color, -1)}
         >
           <Text style={styles.btnText}>-</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.button}
-          onPress={() => changeColor(color, +15)}
+          onPress={() => changeColor(color, +1)}
         >
           <Text style={styles.btnText}>+</Text>
         </TouchableOpacity>
