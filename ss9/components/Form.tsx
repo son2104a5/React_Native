@@ -1,35 +1,49 @@
 import { PhoneContext } from "@/context/PhoneBookContext";
 import { Phone } from "@/interfaces/phone.interface";
-import React, { useContext, useState } from "react";
-import {
-  Button,
-  Dimensions,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from "react-native";
+import React, { useContext, useEffect, useState } from "react";
+import { Button, Dimensions, StyleSheet, Text, TextInput, View } from "react-native";
 
 const dimensions = Dimensions.get("window");
 
 export default function Form() {
-  // Lấy dữ liệu từ context
-  const { isShowForm, onCloseForm, onAddPhoneBook } = useContext(PhoneContext);
+  const {
+    isShowForm,
+    onCloseForm,
+    onAddPhoneBook,
+    onEditPhoneBook,
+    onDeletePhoneBook,
+    selectedPhone,
+  } = useContext(PhoneContext);
 
   const [phone, setPhone] = useState<Phone>({
+    id: "",
     fullName: "",
     phoneNumber: "",
     email: "",
   });
 
+  useEffect(() => {
+    if (selectedPhone) {
+      setPhone(selectedPhone);
+    } else {
+      setPhone({ id: "", fullName: "", phoneNumber: "", email: "" });
+    }
+  }, [selectedPhone]);
+
   const handleSubmit = () => {
-    // Gọi hàm để truyền dữ liệu lên context
-    onAddPhoneBook?.({
-      id: "123",
-      fullName: phone.fullName,
-      phoneNumber: phone.phoneNumber,
-      email: phone.email,
-    });
+    if (phone.id) {
+      onEditPhoneBook?.(phone);
+    } else {
+      onAddPhoneBook?.({ ...phone, id: Date.now().toString() });
+    }
+    onCloseForm?.();
+  };
+
+  const handleDelete = () => {
+    if (phone.id) {
+      onDeletePhoneBook?.(phone.id);
+      onCloseForm?.();
+    }
   };
 
   return (
@@ -38,35 +52,34 @@ export default function Form() {
         <View style={styles.form}>
           <View style={styles.headerForm}>
             <Text style={{ fontSize: 20, fontWeight: "bold" }}>
-              Thêm mới liên hệ
+              {phone.id ? "Sửa liên hệ" : "Thêm mới liên hệ"}
             </Text>
             <Button title="Đóng" onPress={onCloseForm} />
           </View>
           <View style={styles.inputContainer}>
             <TextInput
-              onChangeText={(text) => {
-                setPhone({ ...phone, fullName: text });
-              }}
+              value={phone.fullName}
+              onChangeText={(text) => setPhone({ ...phone, fullName: text })}
               style={styles.input}
               placeholder="Tên"
             />
             <TextInput
-              onChangeText={(text) => {
-                setPhone({ ...phone, phoneNumber: text });
-              }}
+              value={phone.phoneNumber}
+              onChangeText={(text) => setPhone({ ...phone, phoneNumber: text })}
               style={styles.input}
               placeholder="Số điện thoại"
               keyboardType="numeric"
             />
             <TextInput
-              onChangeText={(text) => {
-                setPhone({ ...phone, email: text });
-              }}
+              value={phone.email}
+              onChangeText={(text) => setPhone({ ...phone, email: text })}
               style={styles.input}
               placeholder="Email (không bắt buộc)"
             />
-            <Button title="Lưu" onPress={handleSubmit}/>
-            <Button color={"red"} title="Xóa liên hệ" />
+            <Button title="Lưu" onPress={handleSubmit} />
+            {phone.id ? (
+              <Button color={"red"} title="Xóa liên hệ" onPress={handleDelete} />
+            ) : null}
           </View>
         </View>
       </View>
