@@ -8,7 +8,7 @@ export default function Header() {
   return (
     <View style={styles.header}>
         <Text style={styles.title}>Danh bạ</Text>
-        <Button title='Thêm' onPress={onOpenForm}/>
+        <Button title='Thêm' onPress={() => onOpenForm && onOpenForm()}/>
     </View>
   )
 }

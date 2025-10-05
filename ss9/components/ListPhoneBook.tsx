@@ -12,7 +12,7 @@ export default function ListPhoneBook() {
         data={phoneBooks}
         keyExtractor={(item) => item.id ? String(item.id) : ""}
         renderItem={({ item }) => <PhoneBookItem phone={item} />}
-      />
+      />vc        v bbbbbbbb gbhgggggggvvccccjkịuhbg ciuhngbv ckjhbvc9uyhgfdxzi8ùyokjnb 
     </View>
   );
 }
