@@ -1,19 +1,20 @@
 import axios from "axios";
+import { Alert } from "react-native";
 
 const axiosInstance = axios.create({
-  baseURL: "https://nest-axiosInstance-public.ixe-agent.io.vn/axiosInstance/v1",
+  baseURL: "https://nest-api-public.ixe-agent.io.vn/api/v1/",
   headers: {
     "Content-Type": "application/json",
   },
 });
 
-// Gửi các request kèm theo lên axiosInstance
+// Gửi các request kèm theo lên API (thông qua interceptor)
 axiosInstance.interceptors.request.use(
   (config) => {
-    // Thêm các thông tin như token, ngôn ngữ,... vào header
-    const accessToken = localStorage.getItem("accessToken");
-    if (accessToken && config.headers) {
-      config.headers.Authorization = `Bearer ${accessToken}`;
+    const accessToken =
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjEzMiwicm9sZSI6IlF14bqjbiBsw70iLCJzdGF0dXMiOiJBQ1RJVkUiLCJpYXQiOjE3NjA1MTc0NDksImV4cCI6MTc2MDUxODM0OX0.t-l1iTeNgwe-N1rKLcle7zLj8I-moFSO6F_sJuA-fBc";
+    if (accessToken) {
+      config.headers["Authorization"] = `Bearer ${accessToken}`;
     }
     return config;
   },
@@ -28,35 +29,40 @@ axiosInstance.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
-    // Check if the error is 401 Unauthorized and it's not the refresh token endpoint itself
+    // Check if the error is 401 Unauthorized and not a refresh token request itself
     if (error.response.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true; // Mark the request to prevent infinite loops
 
       try {
-        const refreshToken = localStorage.getItem("refreshToken"); // Or retrieve from cookies
+        // Call your refresh token endpoint
         const response = await axios.post(
           "https://nest-api-public.ixe-agent.io.vn/api/v1/auths/refresh-token",
-          { refreshToken }
+          {
+            refreshToken:
+              "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjEzMiwiaWF0IjoxNzYwNTE3NDQ5LCJleHAiOjE3NjExMjIyNDl9.HmH4QMNunQuF7SE4InJ0wYbi8b9DAoQZHgjo7MZzzCA",
+          }
         );
-        const { accessToken: newAccessToken, refreshToken: newRefreshToken } =
-          response.data;
 
-        localStorage.setItem("accessToken", newAccessToken);
-        localStorage.setItem("refreshToken", newRefreshToken);
+        const { accessToken } = response?.data?.data;
 
+        // Update stored tokens on AsyncStorage
+        // localStorage.setItem("accessToken", accessToken);
+
+        // Update the Authorization header in the original failed request
         axiosInstance.defaults.headers.common[
           "Authorization"
-        ] = `Bearer ${newAccessToken}`;
-        originalRequest.headers["Authorization"] = `Bearer ${newAccessToken}`;
+        ] = `Bearer ${accessToken}`;
+        originalRequest.headers["Authorization"] = `Bearer ${accessToken}`;
 
-        return axiosInstance(originalRequest); // Retry the original failed request
+        // Retry the original request with the new access token
+        return axiosInstance(originalRequest);
       } catch (refreshError) {
         // Handle refresh token failure (e.g., redirect to login)
         console.error("Refresh token failed:", refreshError);
-        // Example: Clear tokens and redirect to login page
-        localStorage.removeItem("accessToken");
-        localStorage.removeItem("refreshToken");
-        window.location.href = "/login";
+        Alert.alert(
+          "Cảnh báo",
+          "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại"
+        );
         return Promise.reject(refreshError);
       }
     }

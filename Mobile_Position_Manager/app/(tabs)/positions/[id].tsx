@@ -7,17 +7,28 @@ import {
   Text,
   View,
 } from "react-native";
-import { usePositions } from "../../../hooks/usePositions";
+import { useQuery } from "@tanstack/react-query";
+import { getPositionDetail } from "@/apis/position.api";
 
 export default function PositionDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   // Chuyển đổi id từ string sang number
   const positionId = Number(id);
-  const { getPositionById, loading } = usePositions();
 
-  const position = getPositionById(positionId);
+  // Dùng useQuery để lấy chi tiết vị trí
+  const {
+    data: position,
+    isLoading,
+    isError,
+  } = useQuery({
+    queryKey: ["position", positionId],
+    queryFn: async () => {
+      const response = await getPositionDetail(positionId);
+      return response.data;
+    },
+  });
 
-  if (loading) return <ActivityIndicator size="large" />;
+  if (isLoading) return <ActivityIndicator size="large" />;
   if (!position)
     return <Text style={styles.errorText}>Không tìm thấy vị trí.</Text>;
 

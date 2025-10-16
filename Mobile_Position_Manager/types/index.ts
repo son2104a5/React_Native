@@ -9,3 +9,5 @@ export interface Position {
   positionStatus: PositionStatus;
   createdAt: string;
 }
+
+export type PositionResponse = Omit<Position, "id" | "createdAt">;
