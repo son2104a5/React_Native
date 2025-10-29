@@ -1,14 +1,45 @@
 // app/(tabs)/(tasks)/[id].tsx
 import { useLocalSearchParams } from "expo-router";
-import React from "react";
-import { SafeAreaView, ScrollView, StyleSheet, Text, View } from "react-native";
-import { MOCK_TASKS } from "../../../constants/MockData";
+import React, { useState, useEffect } from "react";
+import { SafeAreaView, ScrollView, StyleSheet, Text, View, ActivityIndicator, Alert } from "react-native";
+import { Task, getStatusDisplayText } from "../../../types";
+import { apiService } from "../../../services/api";
 
 export default function TaskDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
+  const [task, setTask] = useState<Task | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  // Giả lập tìm kiếm task từ data cứng
-  const task = MOCK_TASKS.find((p) => p.id === id);
+  useEffect(() => {
+    const loadTask = async () => {
+      try {
+        setLoading(true);
+        const tasks = await apiService.getAllTasks();
+        const foundTask = tasks.find(t => t.id === parseInt(id || '0'));
+        setTask(foundTask || null);
+      } catch (error) {
+        console.error('Error loading task:', error);
+        Alert.alert('Lỗi', 'Không thể tải thông tin công việc');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (id) {
+      loadTask();
+    }
+  }, [id]);
+
+  if (loading) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#007AFF" />
+          <Text style={styles.loadingText}>Đang tải...</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   if (!task) {
     return (
@@ -28,10 +59,10 @@ export default function TaskDetailScreen() {
           <Text
             style={[
               styles.value,
-              { color: task.status === "Hoàn thành" ? "green" : "orange" },
+              { color: task.status === "COMPLETED" ? "green" : "orange" },
             ]}
           >
-            {task.status}
+            {getStatusDisplayText(task.status)}
           </Text>
         </View>
 
@@ -53,6 +84,16 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#fff",
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  loadingText: {
+    marginTop: 10,
+    fontSize: 16,
+    color: "#666",
   },
   content: {
     padding: 20,

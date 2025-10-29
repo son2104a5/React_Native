@@ -2,12 +2,12 @@ import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React from "react";
 import { StyleSheet, Switch, Text, TouchableOpacity, View } from "react-native";
-import { Task, TaskPriority, TaskStatus } from "../types";
+import { Task, TaskPriority, TaskStatus, getPriorityDisplayText, getStatusDisplayText } from "../types";
 
 interface TaskListItemProps {
   task: Task;
-  onToggleStatus: (id: string) => void;
-  onDelete: (id: string) => void;
+  onToggleStatus: (id: number) => void;
+  onDelete: (id: number) => void;
 }
 
 const getPriorityColor = (priority: TaskPriority) => {
@@ -69,7 +69,7 @@ const TaskListItem: React.FC<TaskListItemProps> = ({
               { color: getPriorityColor(task.priority) },
             ]}
           >
-            Ưu tiên: {task.priority}
+            Ưu tiên: {getPriorityDisplayText(task.priority)}
           </Text>
         </TouchableOpacity>
       </View>

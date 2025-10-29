@@ -1,11 +1,13 @@
 // app/(tabs)/(tasks)/add.tsx
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useRouter } from "expo-router";
-import React from "react";
+import React, { useState } from "react";
 import { useForm } from "react-hook-form";
+import { Alert } from "react-native";
 import * as yup from "yup";
 import TaskForm from "../../../components/TaskForm";
 import { TaskFormData, TaskPriority } from "../../../types";
+import { apiService } from "../../../services/api";
 
 // Định nghĩa schema validation
 const schema = yup.object().shape({
@@ -19,6 +21,7 @@ const schema = yup.object().shape({
 
 export default function AddTaskScreen() {
   const router = useRouter();
+  const [loading, setLoading] = useState(false);
   const {
     control,
     handleSubmit,
@@ -32,11 +35,24 @@ export default function AddTaskScreen() {
     },
   });
 
-  // Giả lập hàm submit
-  const onSubmit = (data: TaskFormData) => {
-    console.log("Dữ liệu thêm mới:", data);
-    // Đây là UI, nên chỉ đóng modal
-    router.back();
+  // Submit function với API call
+  const onSubmit = async (data: TaskFormData) => {
+    try {
+      setLoading(true);
+      await apiService.createTask({
+        name: data.name,
+        priority: data.priority,
+        status: "PENDING",
+        description: data.description,
+      });
+      Alert.alert("Thành công", "Đã thêm công việc mới");
+      router.back();
+    } catch (error) {
+      console.error("Error creating task:", error);
+      Alert.alert("Lỗi", "Không thể thêm công việc mới");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -44,6 +60,7 @@ export default function AddTaskScreen() {
       control={control}
       errors={errors}
       onSubmit={handleSubmit(onSubmit)}
+      loading={loading}
     />
   );
 }

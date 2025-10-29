@@ -3,13 +3,14 @@ import { Picker } from "@react-native-picker/picker"; // Cài thêm: npx expo in
 import React from "react";
 import { Control, Controller, FieldErrors } from "react-hook-form";
 import { Button, StyleSheet, Text, TextInput, View } from "react-native";
-import { TaskFormData, TaskPriority } from "../types";
+import { TaskFormData, TaskPriority, getPriorityDisplayText } from "../types";
 
 interface TaskFormProps {
   control: Control<TaskFormData>;
   errors: FieldErrors<TaskFormData>;
   onSubmit: () => void;
   isEdit?: boolean;
+  loading?: boolean;
 }
 
 const TaskForm: React.FC<TaskFormProps> = ({
@@ -17,6 +18,7 @@ const TaskForm: React.FC<TaskFormProps> = ({
   errors,
   onSubmit,
   isEdit,
+  loading = false,
 }) => {
   return (
     <View style={styles.container}>
@@ -66,16 +68,20 @@ const TaskForm: React.FC<TaskFormProps> = ({
               selectedValue={value}
               onValueChange={(itemValue) => onChange(itemValue)}
             >
-              <Picker.Item label="Thấp" value={TaskPriority.Low} />
-              <Picker.Item label="Trung bình" value={TaskPriority.Medium} />
-              <Picker.Item label="Cao" value={TaskPriority.High} />
+              <Picker.Item label={getPriorityDisplayText(TaskPriority.Low)} value={TaskPriority.Low} />
+              <Picker.Item label={getPriorityDisplayText(TaskPriority.Medium)} value={TaskPriority.Medium} />
+              <Picker.Item label={getPriorityDisplayText(TaskPriority.High)} value={TaskPriority.High} />
             </Picker>
           </View>
         )}
       />
 
       <View style={styles.buttonContainer}>
-        <Button title={isEdit ? "Cập nhật" : "Thêm mới"} onPress={onSubmit} />
+        <Button 
+          title={isEdit ? "Cập nhật" : "Thêm mới"} 
+          onPress={onSubmit}
+          disabled={loading}
+        />
       </View>
     </View>
   );
