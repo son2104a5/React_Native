@@ -1,8 +1,9 @@
-package com.data.services;
+package com.data.services.impl;
 
 import com.data.model.dto.response.TaskDTO;
 import com.data.model.entity.Task;
 import com.data.repository.TaskRepository;
+import com.data.services.TaskService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -46,7 +47,6 @@ public class TaskServiceImpl implements TaskService {
 
     @Override
     public void deleteTask(Long id) {
-        Task selectTask = taskRepository.getById(id);
-        taskRepository.delete(selectTask);
+        taskRepository.deleteById(id);
     }
 }
